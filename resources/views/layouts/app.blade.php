@@ -182,7 +182,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const toggle = (el, force) => {
-                const hidden = force !== undefined ? force : el.classList.contains('hidden');
+                const hidden = force !== undefined ? force : !el.classList.contains('hidden');
                 el.classList.toggle('hidden', hidden);
                 document.body.classList.toggle('overflow-hidden', !hidden);
                 if (!hidden) {
@@ -193,7 +193,7 @@
             document.querySelectorAll('[data-toggle-modal]').forEach((btn) => {
                 btn.addEventListener('click', () => {
                     const el = document.getElementById(btn.dataset.toggleModal);
-                    if (el) toggle(el, el.classList.contains('hidden'));
+                    if (el) toggle(el);
                 });
             });
             document.querySelectorAll('[data-close-modal]').forEach((btn) => {
