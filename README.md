@@ -20,11 +20,11 @@ Personal Money Tracker / Budget Planner. Laravel + Blade + Tailwind (CDN) + Post
 
 2. Salin/timpa folder-folder berikut dari hasil unduhan ke project barunya:
    - `app/Models/`
-   - `app/Http/Controllers/`
+   - `app/Http/Controllers/` (termasuk subfolder `Auth/`)
    - `database/migrations/` (tambahkan, jangan hapus migration bawaan seperti `users`)
    - `database/seeders/DefaultDataSeeder.php`
    - `routes/web.php` (timpa)
-   - `resources/views/` (timpa seluruhnya)
+   - `resources/views/` (timpa seluruhnya, termasuk folder baru `auth/` dan `layouts/guest.blade.php`)
 
 3. Set `.env` ke PostgreSQL:
    ```
@@ -49,6 +49,7 @@ Personal Money Tracker / Budget Planner. Laravel + Blade + Tailwind (CDN) + Post
 
 ## Catatan Desain
 
+- **Auth**: pakai sistem session bawaan Laravel (`Auth::attempt`, `Auth::login`, dsb) — bukan Breeze/Jetstream, biar gak nambah dependency npm. Ada halaman **Register** dan **Login**; semua route aplikasi (`/`, transaksi, kategori, dompet, budget, laporan) dilindungi middleware `auth`, otomatis redirect ke `/login` kalau belum masuk.
 - **Kategori punya tipe** (income/expense) — form transaksi otomatis filter kategori sesuai tipe yang dipilih (JS di `transactions/_form.blade.php`).
 - **Dompet** (`wallets`) tidak bisa dihapus kalau masih ada transaksinya (`WalletController::destroy`) — proteksi biar histori keuangan gak hilang gak sengaja.
 - **Saldo dompet** dihitung on-the-fly dari `starting_balance + income - expense` (accessor `getCurrentBalanceAttribute` di model `Wallet`), bukan kolom tersimpan — jadi selalu akurat tanpa perlu sinkronisasi manual.

@@ -28,10 +28,17 @@
                 <span class="w-7 h-7 rounded-full border-2 border-[#D2042D] flex items-center justify-center text-[#D2042D] font-bold text-sm leading-none">C</span>
                 <span class="font-semibold tracking-tight text-lg text-slate-900"><span class="text-[#D2042D]">C</span>ashFlow</span>
             </div>
-            <a href="{{ route('transactions.create') }}"
-               class="bg-amber-500 hover:bg-amber-400 active:scale-[0.97] transition text-zinc-950 text-sm font-medium px-4 py-2 rounded-lg">
-                + Transaksi
-            </a>
+            <div class="flex items-center gap-3">
+                <span class="hidden sm:block text-sm text-slate-500">{{ auth()->user()->name }}</span>
+                <a href="{{ route('transactions.create') }}"
+                   class="bg-amber-500 hover:bg-amber-400 active:scale-[0.97] transition text-zinc-950 text-sm font-medium px-4 py-2 rounded-lg">
+                    + Transaksi
+                </a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="text-sm text-slate-400 hover:text-slate-600">Keluar</button>
+                </form>
+            </div>
         </div>
         <div class="max-w-5xl mx-auto px-5 flex items-center gap-5 text-sm overflow-x-auto">
             @php
