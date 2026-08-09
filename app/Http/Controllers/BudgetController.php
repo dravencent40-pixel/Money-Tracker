@@ -4,26 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\Budget;
 use App\Models\Category;
-use App\Models\WeeklyBudget;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class BudgetController extends Controller
 {
     public function index(Request $request)
     {
         $month = $request->query('month', Carbon::now()->format('Y-m'));
-        $weekStart = $request->query('week', Carbon::now()->startOfWeek(Carbon::MONDAY)->toDateString());
 
-        $categories = Category::orderBy('name')->get();
+        $categories = Category::expense()->orderBy('name')->get();
+        $budgets = Budget::where('month', $month)->pluck('amount', 'category_id');
 
-        $monthlyBudgets = Budget::where('month', $month)->pluck('amount', 'category_id');
-        $weeklyBudgets = WeeklyBudget::where('week_start_date', $weekStart)->pluck('amount', 'category_id');
-
-        return view('budgets.index', compact('categories', 'monthlyBudgets', 'weeklyBudgets', 'month', 'weekStart'));
+        return view('budgets.index', compact('categories', 'budgets', 'month'));
     }
 
-    public function storeMonthly(Request $request)
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'month' => 'required|string',
@@ -44,32 +40,6 @@ class BudgetController extends Controller
         }
 
         return redirect()->route('budgets.index', ['month' => $validated['month']])
-            ->with('status', 'Budget bulanan disimpan.');
-    }
-
-    public function storeWeekly(Request $request)
-    {
-        $validated = $request->validate([
-            'week_start_date' => 'required|date',
-            'amounts' => 'array',
-            'amounts.*' => 'nullable|numeric|min:0',
-        ]);
-
-        foreach ($validated['amounts'] ?? [] as $categoryId => $amount) {
-            if ($amount === null || $amount === '') {
-                WeeklyBudget::where('category_id', $categoryId)
-                    ->where('week_start_date', $validated['week_start_date'])
-                    ->delete();
-                continue;
-            }
-
-            WeeklyBudget::updateOrCreate(
-                ['category_id' => $categoryId, 'week_start_date' => $validated['week_start_date']],
-                ['amount' => $amount]
-            );
-        }
-
-        return redirect()->route('budgets.index', ['week' => $validated['week_start_date']])
-            ->with('status', 'Budget mingguan disimpan.');
+            ->with('status', 'Budget bulan ' . $validated['month'] . ' disimpan.');
     }
 }

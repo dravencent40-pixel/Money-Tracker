@@ -2,20 +2,50 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 class Transaction extends Model
 {
-    protected $fillable = ['category_id', 'type', 'amount', 'date', 'note'];
+    protected $fillable = ['wallet_id', 'category_id', 'type', 'amount', 'date', 'note'];
 
     protected $casts = [
         'date' => 'date',
         'amount' => 'decimal:2',
     ];
 
+    public function wallet(): BelongsTo
+    {
+        return $this->belongsTo(Wallet::class);
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Filter transaksi dalam satu bulan tertentu.
+     * $month format: 'YYYY-MM'. Default bulan berjalan.
+     */
+    public function scopeInMonth(Builder $query, ?string $month = null): Builder
+    {
+        $month = $month ?: Carbon::now()->format('Y-m');
+        $start = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
+        $end = Carbon::createFromFormat('Y-m', $month)->endOfMonth();
+
+        return $query->whereBetween('date', [$start, $end]);
+    }
+
+    public function scopeIncome(Builder $query): Builder
+    {
+        return $query->where('type', 'income');
+    }
+
+    public function scopeExpense(Builder $query): Builder
+    {
+        return $query->where('type', 'expense');
     }
 }

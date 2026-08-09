@@ -10,12 +10,16 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('wallet_id')->constrained()->restrictOnDelete();
             $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
             $table->enum('type', ['income', 'expense']);
-            $table->decimal('amount', 12, 2);
+            $table->decimal('amount', 15, 2);
             $table->date('date');
             $table->string('note')->nullable();
             $table->timestamps();
+
+            $table->index(['date']);
+            $table->index(['type']);
         });
     }
 

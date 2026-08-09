@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('category_id')->constrained()->cascadeOnDelete();
             $table->string('month'); // format: YYYY-MM
-            $table->decimal('amount', 12, 2);
+            $table->decimal('amount', 15, 2);
             $table->timestamps();
 
             $table->unique(['category_id', 'month']);

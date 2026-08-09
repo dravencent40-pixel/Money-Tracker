@@ -8,18 +8,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
+        Schema::create('wallets', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('type', ['income', 'expense'])->default('expense');
+            $table->enum('type', ['cash', 'bank', 'ewallet'])->default('cash');
+            $table->decimal('starting_balance', 15, 2)->default(0);
             $table->timestamps();
-
-            $table->unique(['name', 'type']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('wallets');
     }
 };

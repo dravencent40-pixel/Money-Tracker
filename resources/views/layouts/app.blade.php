@@ -2,83 +2,71 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Money Tracker</title>
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-            background: #f5f5f5;
-            color: #222;
-            margin: 0;
-            padding: 0;
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dompetku</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
         }
-        nav {
-            background: #222;
-            padding: 12px 20px;
-            display: flex;
-            gap: 18px;
-        }
-        nav a {
-            color: #eee;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        nav a:hover { text-decoration: underline; }
-        .container {
-            max-width: 720px;
-            margin: 24px auto;
-            padding: 0 16px;
-        }
-        h1 { font-size: 20px; margin-bottom: 12px; }
-        h2 { font-size: 16px; margin: 20px 0 8px; }
-        .card {
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 14px;
-            margin-bottom: 12px;
-        }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid #eee; font-size: 14px; }
-        .row { display: flex; justify-content: space-between; }
-        .muted { color: #777; font-size: 12px; }
-        .bar-bg { background: #eee; border-radius: 4px; height: 8px; margin-top: 4px; overflow: hidden; }
-        .bar-fill { height: 100%; background: #3b82f6; }
-        .bar-fill.over { background: #ef4444; }
-        form { display: flex; flex-direction: column; gap: 8px; max-width: 400px; }
-        input, select, button {
-            padding: 8px;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            background: #222;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            width: fit-content;
-            padding: 8px 16px;
-        }
-        button:hover { background: #444; }
-        .status { background: #e6ffed; border: 1px solid #b6f0c2; padding: 8px; border-radius: 4px; margin-bottom: 12px; font-size: 14px; }
-        .link-btn { font-size: 13px; color: #b91c1c; cursor: pointer; background: none; border: none; padding: 0; }
-        .income { color: #16a34a; }
-        .expense { color: #dc2626; }
-    </style>
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 </head>
-<body>
-    <nav>
-        <a href="{{ route('dashboard') }}">Dashboard</a>
-        <a href="{{ route('transactions.index') }}">Transaksi</a>
-        <a href="{{ route('categories.index') }}">Kategori</a>
-        <a href="{{ route('budgets.index') }}">Budget</a>
-    </nav>
-    <div class="container">
+<body class="bg-zinc-950 text-zinc-100 font-sans min-h-screen antialiased">
+    <header class="border-b border-zinc-900 sticky top-0 z-10 bg-zinc-950/90 backdrop-blur">
+        <div class="max-w-5xl mx-auto px-5 flex items-center justify-between h-14">
+            <div class="flex items-center gap-2">
+                <span class="w-1.5 h-4 bg-amber-500 rounded-sm"></span>
+                <span class="font-semibold tracking-tight">Dompetku</span>
+            </div>
+            <a href="{{ route('transactions.create') }}"
+               class="bg-amber-500 hover:bg-amber-400 active:scale-[0.97] transition text-zinc-950 text-sm font-medium px-4 py-2 rounded-lg">
+                + Transaksi
+            </a>
+        </div>
+        <div class="max-w-5xl mx-auto px-5 flex items-center gap-5 text-sm overflow-x-auto">
+            @php
+                $links = [
+                    'dashboard' => 'Dashboard',
+                    'transactions.index' => 'Transaksi',
+                    'categories.index' => 'Kategori',
+                    'wallets.index' => 'Dompet',
+                    'budgets.index' => 'Budget',
+                    'reports.index' => 'Laporan',
+                ];
+            @endphp
+            @foreach ($links as $routeName => $label)
+                @php $active = request()->routeIs(str_replace('.index','',$routeName).'*') || request()->routeIs($routeName); @endphp
+                <a href="{{ route($routeName) }}"
+                   class="pb-2.5 pt-1 border-b-2 whitespace-nowrap {{ $active ? 'border-amber-500 text-zinc-50' : 'border-transparent text-zinc-500 hover:text-zinc-300' }}">
+                    {{ $label }}
+                </a>
+            @endforeach
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-5 py-6">
         @if (session('status'))
-            <div class="status">{{ session('status') }}</div>
+            <div class="mb-4 text-sm text-emerald-400 border border-emerald-900 bg-emerald-950/40 rounded-lg px-4 py-2.5">
+                {{ session('status') }}
+            </div>
         @endif
+        @if (session('error'))
+            <div class="mb-4 text-sm text-rose-400 border border-rose-900 bg-rose-950/40 rounded-lg px-4 py-2.5">
+                {{ session('error') }}
+            </div>
+        @endif
+
         @yield('content')
-    </div>
+    </main>
 </body>
 </html>

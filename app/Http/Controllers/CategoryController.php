@@ -9,18 +9,19 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::orderBy('name')->get();
+        $categories = Category::orderBy('type')->orderBy('name')->get();
 
         return view('categories.index', compact('categories'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name',
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:income,expense',
         ]);
 
-        Category::create($request->only('name'));
+        Category::create($validated);
 
         return redirect()->route('categories.index')->with('status', 'Kategori ditambahkan.');
     }
