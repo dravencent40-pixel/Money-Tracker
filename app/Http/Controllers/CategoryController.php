@@ -19,9 +19,10 @@ class CategoryController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:income,expense',
+            'icon' => 'nullable|string|max:20',
         ]);
 
-        Category::create($validated);
+        Category::create($validated + ['user_id' => auth()->id()]);
 
         return redirect()->route('categories.index')->with('status', 'Kategori ditambahkan.');
     }

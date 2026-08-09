@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,7 +10,9 @@ use Illuminate\Support\Carbon;
 
 class Transaction extends Model
 {
-    protected $fillable = ['wallet_id', 'category_id', 'type', 'amount', 'date', 'note'];
+    use BelongsToUser;
+
+    protected $fillable = ['user_id', 'wallet_id', 'category_id', 'type', 'amount', 'date', 'note'];
 
     protected $casts = [
         'date' => 'date',

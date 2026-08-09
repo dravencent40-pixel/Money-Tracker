@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 // Guest routes (belum login)
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('login', [AuthController::class, 'login']);
+    Route::post('login', [AuthController::class, 'login'])->middleware('throttle:5,1');
     Route::get('register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('register', [AuthController::class, 'register']);
 });
@@ -37,4 +37,5 @@ Route::middleware('auth')->group(function () {
     Route::post('budgets', [BudgetController::class, 'store'])->name('budgets.store');
 
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
 });

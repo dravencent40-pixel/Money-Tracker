@@ -9,7 +9,7 @@ class WalletController extends Controller
 {
     public function index()
     {
-        $wallets = Wallet::orderBy('name')->get();
+        $wallets = Wallet::allWithBalance();
 
         return view('wallets.index', compact('wallets'));
     }
@@ -22,7 +22,7 @@ class WalletController extends Controller
             'starting_balance' => 'nullable|numeric|min:0',
         ]);
 
-        Wallet::create($validated);
+        Wallet::create($validated + ['user_id' => auth()->id()]);
 
         return redirect()->route('wallets.index')->with('status', 'Dompet ditambahkan.');
     }

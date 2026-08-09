@@ -1,33 +1,47 @@
-# Money Tracker (v2 — Full Spec)
+# CashFlow — Personal Money Tracker
 
-Personal Money Tracker / Budget Planner. Laravel + Blade + Tailwind (CDN) + PostgreSQL. Tanpa login.
+Aplikasi pencatat keuangan pribadi (personal finance / budget planner) berbasis **Laravel + Blade + PostgreSQL**.
+
+## Fitur
+
+- **Auth**: register & login pakai session bawaan Laravel (bukan Breeze/Jetstream); semua route aplikasi dilindungi `auth`.
+- **Dashboard**: ringkasan budget (aman / warning / over / belum diset), top kategori pengeluaran, donut chart pengeluaran per kategori, komposisi saldo per dompet, tren 5 bulan, estimasi runway, dan transaksi terbaru.
+- **Transaksi**: tambah/ubah/hapus, pencarian + filter (bulan, tipe, kategori, dompet), summary income/expense/net, quick-add dari modal global.
+- **Kategori**: tipe income/expense + pilihan ikon (emoji).
+- **Dompet**: saldo dihitung on-the-fly dari `starting_balance + income - expense`; proteksi tidak bisa dihapus jika masih punya transaksi; bisa pilih ikon & warna.
+- **Budget**: limit per kategori per bulan, progress spend, tombol salin budget dari bulan sebelumnya.
+- **Laporan**: net balance, savings rate, breakdown per kategori, dan ekspor CSV.
+- **Mobile-first**: sidebar di desktop, bottom navigation di mobile.
+
+## Tech Stack
+
+- **Backend**: Laravel (PHP), PostgreSQL
+- **Frontend**: Blade + Tailwind CSS v4 via Vite, Chart.js, font Outfit & JetBrains Mono (Google Fonts CDN)
+- **Locale**: Indonesia (`id`), timezone `Asia/Jakarta`
 
 ## Struktur
 
-- **Migrations:** `categories`, `wallets`, `transactions`, `budgets` — semua nominal pakai `decimal(15,2)`.
-- **Models:** `Category`, `Wallet`, `Transaction`, `Budget` dengan relasi & scope (`inMonth`, `income`, `expense`).
-- **Controllers:** `DashboardController`, `TransactionController`, `CategoryController`, `WalletController`, `BudgetController`, `ReportController`.
-- **Views:** Tailwind via CDN (`cdn.tailwindcss.com`) — tanpa build step, langsung jalan.
-- **Grafik:** Chart.js via CDN, dipakai di dashboard untuk pie chart pengeluaran per kategori.
+- **Migrations**: `categories`, `wallets`, `transactions`, `budgets` (+ `users` bawaan) — semua nominal `decimal(15,2)`.
+- **Models**: `Category`, `Wallet`, `Transaction`, `Budget` dengan relasi & scope (`inMonth`, `income`, `expense`); `Wallet::allWithBalance()` untuk query bebas N+1.
+- **Controllers**: `DashboardController`, `TransactionController`, `CategoryController`, `WalletController`, `BudgetController`, `ReportController`, `Auth/*`.
+- **Views**: `resources/views/` — layouts (`app` dengan sidebar/bottom-nav), komponen Blade (`icon`, `flash`, `empty-state`, `month-picker`, `page-header`, `stat-card`).
+- **CSS**: `resources/css/app.css` — design token (ink/cash/cost) + komponen reusable (`.btn*`, `.card`, `.input`, `.money`, `.badge*`).
+- **Seeder**: `DefaultDataSeeder` untuk kategori & dompet awal.
 
-## Cara Install
+## Cara Install (Local)
 
-1. Buat project Laravel baru:
+1. Clone repo & install dependencies:
+
+   ```bash
+   composer install
+   npm install
+   cp .env.example .env
+   php artisan key:generate
    ```
-   composer create-project laravel/laravel money-tracker
-   cd money-tracker
-   ```
 
-2. Salin/timpa folder-folder berikut dari hasil unduhan ke project barunya:
-   - `app/Models/`
-   - `app/Http/Controllers/` (termasuk subfolder `Auth/`)
-   - `database/migrations/` (tambahkan, jangan hapus migration bawaan seperti `users`)
-   - `database/seeders/DefaultDataSeeder.php`
-   - `routes/web.php` (timpa)
-   - `resources/views/` (timpa seluruhnya, termasuk folder baru `auth/` dan `layouts/guest.blade.php`)
+2. Set `.env` ke PostgreSQL:
 
-3. Set `.env` ke PostgreSQL:
-   ```
+   ```env
    DB_CONNECTION=pgsql
    DB_HOST=127.0.0.1
    DB_PORT=5432
@@ -36,22 +50,42 @@ Personal Money Tracker / Budget Planner. Laravel + Blade + Tailwind (CDN) + Post
    DB_PASSWORD=your_password
    ```
 
-4. Migrate & seed:
-   ```
+3. Migrate & seed:
+
+   ```bash
    php artisan migrate
    php artisan db:seed --class=DefaultDataSeeder
    ```
 
-5. Jalankan:
+4. Jalankan (2 terminal):
+
+   ```bash
+   npm run dev       # terminal 1 — Vite dev server
+   php artisan serve # terminal 2 — Laravel
    ```
-   php artisan serve
-   ```
+
+## Build & Test
+
+```bash
+npm run build          # produksi: Tailwind + JS ke public/build
+php artisan test       # feature tests
+vendor/bin/pint        # code style
+php artisan view:cache # pre-compile blade (opsional)
+```
+
+> Catatan: `public/build` ada di `.gitignore` — di server production build harus dijalankan saat deploy (lihat di bawah).
+
+## Deploy ke Railway
+
+- **Build command**: `composer install --no-dev --optimize-autoloader && npm ci && npm run build`
+- **Start command**: `php artisan serve --host=0.0.0.0 --port=$PORT`
+- Post-deploy: `php artisan migrate --force && php artisan db:seed --class=DefaultDataSeeder --force`
+- Tambahkan plugin PostgreSQL & attach volume ke `storage` jika perlu persistensi file.
 
 ## Catatan Desain
 
-- **Auth**: pakai sistem session bawaan Laravel (`Auth::attempt`, `Auth::login`, dsb) — bukan Breeze/Jetstream, biar gak nambah dependency npm. Ada halaman **Register** dan **Login**; semua route aplikasi (`/`, transaksi, kategori, dompet, budget, laporan) dilindungi middleware `auth`, otomatis redirect ke `/login` kalau belum masuk.
-- **Kategori punya tipe** (income/expense) — form transaksi otomatis filter kategori sesuai tipe yang dipilih (JS di `transactions/_form.blade.php`).
-- **Dompet** (`wallets`) tidak bisa dihapus kalau masih ada transaksinya (`WalletController::destroy`) — proteksi biar histori keuangan gak hilang gak sengaja.
-- **Saldo dompet** dihitung on-the-fly dari `starting_balance + income - expense` (accessor `getCurrentBalanceAttribute` di model `Wallet`), bukan kolom tersimpan — jadi selalu akurat tanpa perlu sinkronisasi manual.
-- **Budget alert**: warna progress bar berubah — hijau (aman), kuning (≥80% dari limit), merah (lewat limit) — logikanya di `DashboardController::index`.
-- Semua halaman pakai Tailwind CDN (bukan build via Vite) supaya deploy-nya simpel tanpa perlu `npm run build`. Kalau nanti mau UI lebih custom/production-grade, bisa migrasi ke Tailwind via Vite.
+- **Data per user**: semua tabel data (`categories`, `wallets`, `transactions`, `budgets`) punya kolom `user_id`; model memakai global scope `BelongsToUser` sehingga setiap akun hanya melihat datanya sendiri. Saat registrasi, akun baru otomatis diberi kategori & dompet bawaan dengan saldo mulai dari 0.
+- **Kategori punya tipe** (income/expense) — form transaksi otomatis memfilter kategori sesuai tipe yang dipilih.
+- **Saldo dompet** dihitung on-the-fly dari transaksi, bukan kolom tersimpan — selalu akurat tanpa sinkronisasi manual.
+- **Budget alert**: progress bar berubah warna — hijau (aman), kuning (≥80% limit), merah (over budget).
+- **Perubahan DB** harus *additive migration* (menambah kolom/index) agar aman di-deploy ke produksi tanpa downtime.

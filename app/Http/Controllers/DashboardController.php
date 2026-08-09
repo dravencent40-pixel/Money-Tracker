@@ -54,7 +54,10 @@ class DashboardController extends Controller
             ->take(5)
             ->values();
 
-        $wallets = Wallet::orderBy('name')->get();
+        // Breakdown pengeluaran untuk donut chart.
+        $expenseBreakdown = $topExpenseCategories->take(6);
+
+        $wallets = Wallet::allWithBalance();
         $totalBalance = $wallets->sum('current_balance');
 
         // Komposisi saldo per dompet (untuk bar proporsi di ringkasan).
@@ -63,33 +66,34 @@ class DashboardController extends Controller
             'percentage' => $totalBalance > 0 ? round(($w->current_balance / $totalBalance) * 100, 1) : 0,
         ])->filter(fn ($w) => $w->wallet->current_balance != 0)->values();
 
-        // Tren arus kas 5 bulan terakhir untuk grafik.
-        $trend = collect(range(4, 0))->map(function ($i) use ($today) {
-            $m = $today->copy()->subMonths($i)->format('Y-m');
+        // Tren arus kas 5 bulan terakhir — 1 query untuk seluruh jendela.
+        $trendMonths = collect(range(4, 0))->map(fn ($i) => $today->copy()->subMonths($i));
+        $rows = Transaction::whereBetween('date', [
+            $trendMonths->first()->startOfMonth(),
+            $trendMonths->last()->endOfMonth(),
+        ])->get(['date', 'type', 'amount'])->groupBy(fn ($t) => $t->date->format('Y-m'));
+
+        $trend = $trendMonths->map(function ($m) use ($rows) {
+            $group = $rows[$m->format('Y-m')] ?? collect();
 
             return [
-                'label' => $today->copy()->subMonths($i)->translatedFormat('M'),
-                'income' => (float) Transaction::income()->inMonth($m)->sum('amount'),
-                'expense' => (float) Transaction::expense()->inMonth($m)->sum('amount'),
+                'label' => $m->translatedFormat('M'),
+                'income' => (float) $group->where('type', 'income')->sum('amount'),
+                'expense' => (float) $group->where('type', 'expense')->sum('amount'),
             ];
         });
 
-        // Estimasi "runway": berapa hari saldo bertahan berdasarkan rata-rata pengeluaran harian bulan ini.
+        // Rata-rata pengeluaran harian bulan ini.
         $daysElapsed = max(1, $today->day);
         $avgDailyExpense = $totalExpense > 0 ? $totalExpense / $daysElapsed : 0;
-        $daysLeft = $avgDailyExpense > 0 ? (int) floor($totalBalance / $avgDailyExpense) : null;
-        $runwayZone = match (true) {
-            $daysLeft === null => 'aman',
-            $daysLeft < 20 => 'kritis',
-            $daysLeft < 60 => 'waspada',
-            default => 'aman',
-        };
 
         $recentTransactions = Transaction::with(['category', 'wallet'])
             ->orderByDesc('date')
             ->orderByDesc('id')
             ->take(5)
             ->get();
+
+        $hasAnyData = Transaction::exists() || Wallet::exists();
 
         return view('dashboard.index', [
             'month' => $month,
@@ -98,14 +102,14 @@ class DashboardController extends Controller
             'balance' => $balance,
             'budgetSummary' => $budgetSummary,
             'topExpenseCategories' => $topExpenseCategories,
+            'expenseBreakdown' => $expenseBreakdown,
             'wallets' => $wallets,
             'totalBalance' => $totalBalance,
             'walletComposition' => $walletComposition,
             'trend' => $trend,
             'avgDailyExpense' => $avgDailyExpense,
-            'daysLeft' => $daysLeft,
-            'runwayZone' => $runwayZone,
             'recentTransactions' => $recentTransactions,
+            'hasAnyData' => $hasAnyData,
         ]);
     }
 }

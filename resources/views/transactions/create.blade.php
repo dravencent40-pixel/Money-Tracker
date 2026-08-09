@@ -1,7 +1,18 @@
 @extends('layouts.app')
 
-@section('content')
-    <h1 class="text-lg font-semibold mb-5">Tambah Transaksi</h1>
+@section('title', 'Tambah Transaksi')
 
-    @include('transactions._form', ['action' => route('transactions.store'), 'method' => 'POST', 'transaction' => null])
+@section('content')
+    <x-page-header title="Tambah Transaksi" subtitle="Catat pemasukan atau pengeluaran baru" />
+
+    <div class="max-w-md">
+        @include('transactions._form', [
+            'action' => route('transactions.store'),
+            'method' => 'POST',
+            'transaction' => null,
+            'uid' => 'create',
+            'wallets' => $wallets,
+            'categories' => $categories,
+        ])
+    </div>
 @endsection

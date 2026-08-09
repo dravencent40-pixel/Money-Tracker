@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Budget extends Model
 {
-    protected $fillable = ['category_id', 'month', 'amount'];
+    use BelongsToUser;
+
+    protected $fillable = ['user_id', 'category_id', 'month', 'amount'];
 
     protected $casts = [
         'amount' => 'decimal:2',

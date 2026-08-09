@@ -1,9 +1,128 @@
 @import 'tailwindcss';
 
+@source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Outfit', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    /* Ink: primary dark (nav, saldo, tombol dark) */
+    --color-ink-50: #f5f7fb;
+    --color-ink-100: #ebeff7;
+    --color-ink-200: #d7e0ef;
+    --color-ink-300: #b7c6e0;
+    --color-ink-400: #8fa6cd;
+    --color-ink-500: #6e88b8;
+    --color-ink-600: #566fa3;
+    --color-ink-700: #465b86;
+    --color-ink-800: #33425f;
+    --color-ink-900: #1e2b44;
+    --color-ink-950: #0f1a2e;
+
+    /* Cash: hijau pemasukan */
+    --color-cash-50: #eafbf3;
+    --color-cash-100: #d0f4e4;
+    --color-cash-200: #a4e8cb;
+    --color-cash-300: #6ed6ad;
+    --color-cash-400: #36be8c;
+    --color-cash-500: #17a571;
+    --color-cash-600: #0c855c;
+    --color-cash-700: #0b6a4c;
+    --color-cash-800: #0c543e;
+    --color-cash-900: #0b4534;
+    --color-cash-950: #03201a;
+
+    /* Cost: merah pengeluaran */
+    --color-cost-50: #fff0f1;
+    --color-cost-100: #ffdee1;
+    --color-cost-200: #ffc1c8;
+    --color-cost-300: #ff94a0;
+    --color-cost-400: #fb5a6e;
+    --color-cost-500: #ed2f4a;
+    --color-cost-600: #cb1736;
+    --color-cost-700: #aa122f;
+    --color-cost-800: #8e132c;
+    --color-cost-900: #7a1428;
+    --color-cost-950: #43050f;
+}
+
+@layer base {
+    html {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        @apply bg-slate-50 text-slate-800 antialiased;
+    }
+}
+
+@layer components {
+    .btn {
+        @apply inline-flex items-center justify-center gap-1.5 rounded-lg text-sm font-medium transition select-none disabled:pointer-events-none disabled:opacity-50;
+    }
+
+    .btn:active {
+        transform: scale(0.98);
+    }
+
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-1.5 rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-zinc-950 transition select-none hover:bg-amber-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+    }
+
+    .btn-dark {
+        @apply inline-flex items-center justify-center gap-1.5 rounded-lg bg-ink-950 px-4 py-2 text-sm font-medium text-white transition select-none hover:bg-ink-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+    }
+
+    .btn-ghost {
+        @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition select-none hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 disabled:pointer-events-none disabled:opacity-50;
+    }
+
+    .btn-danger {
+        @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-cost-600 transition select-none hover:bg-cost-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cost-300 disabled:pointer-events-none disabled:opacity-50;
+    }
+
+    .btn-danger:active {
+        transform: scale(0.98);
+    }
+
+    .card {
+        @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+    }
+
+    .input {
+        @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 transition focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/40;
+    }
+
+    .label {
+        @apply mb-1.5 block text-xs font-medium text-slate-500;
+    }
+
+    .money {
+        @apply font-mono tabular-nums;
+    }
+
+    .badge {
+        @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium;
+    }
+
+    .badge-income {
+        @apply inline-flex items-center gap-1 rounded-full bg-cash-50 px-2 py-0.5 text-xs font-medium text-cash-700;
+    }
+
+    .badge-expense {
+        @apply inline-flex items-center gap-1 rounded-full bg-cost-50 px-2 py-0.5 text-xs font-medium text-cost-600;
+    }
+
+    .nav-link {
+        @apply flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition;
+    }
+
+    .nav-link-active {
+        @apply bg-ink-950 text-white;
+    }
+
+    .nav-link-idle {
+        @apply text-slate-500 hover:bg-slate-100 hover:text-slate-900;
+    }
 }
